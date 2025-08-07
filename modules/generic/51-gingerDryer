@@ -48,7 +48,7 @@ echo "Running install script..."
 pushd "gingerDryer" &> /dev/null || exit 1
 
 # TODO: enable after fixing 
-# sudo -u "${BASE_USER}" bash scripts/install.sh
+sudo -u "${BASE_USER}" bash scripts/install.sh
 
 popd &> /dev/null || exit 1
 
