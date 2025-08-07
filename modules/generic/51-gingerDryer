@@ -40,7 +40,8 @@ sudo -u "${BASE_USER}" git clone "${REPO}" "${FOLDER}"
 echo "Running install script..."
 pushd "${FOLDER}" &> /dev/null || exit 1
 
-sudo -u "${BASE_USER}" bash scripts/install.sh
+# TODO: enable after fixing 
+# sudo -u "${BASE_USER}" bash scripts/install.sh
 
 popd &> /dev/null || exit 1
 
