@@ -18,7 +18,14 @@ source /files/00-config
 ########################################
 
 REPO="https://github.com/gingeradditive/gingerDryer"
-FOLDER="gingerDryer"
+DEPS=(git python3-pip)
+
+########################################
+# Install dependencies                 #
+########################################
+
+apt-get install --yes "${DEPS[@]}"
+
 
 ########################################
 # Save current dir and switch to home  #
@@ -31,14 +38,14 @@ pushd "/home/${BASE_USER}" &> /dev/null || exit 1
 ########################################
 
 echo "Cloning gingerDryer repository..."
-sudo -u "${BASE_USER}" git clone "${REPO}" "${FOLDER}"
+sudo -u "${BASE_USER}" git clone "${REPO}" gingerDryer
 
 ########################################
 # Run installation script              #
 ########################################
 
 echo "Running install script..."
-pushd "${FOLDER}" &> /dev/null || exit 1
+pushd "gingerDryer" &> /dev/null || exit 1
 
 # TODO: enable after fixing 
 # sudo -u "${BASE_USER}" bash scripts/install.sh
@@ -50,5 +57,3 @@ popd &> /dev/null || exit 1
 ########################################
 
 popd &> /dev/null || exit 1
-
-echo "===> gingerDryer installation completed."
