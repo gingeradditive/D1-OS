@@ -1,0 +1,105 @@
+#!/bin/bash
+set -xe
+export LC_ALL=C
+
+########################################
+# Functions and Basic Configuration    #
+########################################
+
+# Load common functions and set up cleanup trap
+source /common.sh
+install_cleanup_trap
+
+# Load additional configuration (e.g., BASE_USER)
+source /files/00-config
+
+########################################
+# Configuration                        #
+########################################
+
+KIOSK_URL="https://www.google.com"
+XINITRC="/home/${BASE_USER}/.xinitrc"
+AUTOSTART="/home/${BASE_USER}/.config/openbox/autostart"
+
+DEPS=(
+    xserver-xorg
+    x11-xserver-utils
+    xinit
+    openbox
+    chromium-browser
+    unclutter
+)
+
+########################################
+# Install dependencies                 #
+########################################
+
+echo "Installing minimal X and Chromium..."
+apt-get install --yes --no-install-recommends "${DEPS[@]}"
+
+########################################
+# Set up Openbox autostart             #
+########################################
+
+echo "Creating Openbox autostart for kiosk..."
+sudo -u "${BASE_USER}" mkdir -p "$(dirname "$AUTOSTART")"
+
+cat > "$AUTOSTART" <<EOF
+# Disable screen blanking and power saving
+xset s off
+xset -dpms
+xset s noblank
+
+# Hide mouse cursor immediately
+unclutter -display :0 -idle 0 &
+
+# Launch Chromium in kiosk mode
+chromium-browser --noerrdialogs --disable-infobars --kiosk ${KIOSK_URL}
+EOF
+
+chown "${BASE_USER}:${BASE_USER}" "$AUTOSTART"
+
+########################################
+# Create .xinitrc                      #
+########################################
+
+echo "Creating .xinitrc..."
+cat > "$XINITRC" <<EOF
+#!/bin/sh
+exec openbox-session
+EOF
+
+chown "${BASE_USER}:${BASE_USER}" "$XINITRC"
+chmod +x "$XINITRC"
+
+########################################
+# Enable autostart of X on tty1        #
+########################################
+
+echo "Modifying .bash_profile to startx on tty1..."
+BASH_PROFILE="/home/${BASE_USER}/.bash_profile"
+if ! grep -q "startx" "$BASH_PROFILE" 2>/dev/null; then
+cat >> "$BASH_PROFILE" <<EOF
+
+# Start X automatically on tty1
+if [ -z "\$DISPLAY" ] && [ "\$(tty)" = "/dev/tty1" ]; then
+  startx
+fi
+EOF
+fi
+
+chown "${BASE_USER}:${BASE_USER}" "$BASH_PROFILE"
+
+########################################
+# Set Raspberry Pi to autologin        #
+########################################
+
+echo "Setting Raspberry Pi OS to console autologin..."
+raspi-config nonint do_boot_behaviour B2
+
+########################################
+# Quiet boot messages (optional)       #
+########################################
+
+echo "Silencing boot messages..."
+sed -i 's/$/ quiet loglevel=0 vt.global_cursor_default=0/' /boot/cmdline.txt
