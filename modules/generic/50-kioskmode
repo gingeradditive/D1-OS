@@ -17,7 +17,7 @@ source /files/00-config
 # Configuration                        #
 ########################################
 
-KIOSK_URL="https://www.google.com"
+KIOSK_URL="http://localhost:3000/"
 XINITRC="/home/${BASE_USER}/.xinitrc"
 AUTOSTART="/home/${BASE_USER}/.config/openbox/autostart"
 
