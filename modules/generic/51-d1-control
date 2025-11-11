@@ -17,7 +17,7 @@ source /files/00-config
 # Configuration                        #
 ########################################
 
-REPO="https://github.com/gingeradditive/gingerDryer"
+REPO="https://github.com/gingeradditive/D1-Control"
 DEPS=(git python3-pip)
 
 ########################################
@@ -37,15 +37,15 @@ pushd "/home/${BASE_USER}" &> /dev/null || exit 1
 # Clone repository                     #
 ########################################
 
-echo "Cloning gingerDryer repository..."
-sudo -u "${BASE_USER}" git clone "${REPO}" gingerDryer
+echo "Cloning D1-Control repository..."
+sudo -u "${BASE_USER}" git clone "${REPO}" D1-Control
 
 ########################################
 # Run installation script              #
 ########################################
 
 echo "Running install script..."
-pushd "gingerDryer" &> /dev/null || exit 1
+pushd "D1-Control" &> /dev/null || exit 1
 
 # TODO: enable after fixing 
 sudo -u "${BASE_USER}" bash scripts/install.sh
