@@ -385,20 +385,20 @@ jobs:
           git commit -m "docs(changelog): update changelog"
           git push
 
-  merge-develop-to-master:
-    needs: [ update-changelog ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: "📥 Checkout"
-        uses: actions/checkout@v4
-        with:
-          ref: master
-          fetch-depth: 0
+  # merge-develop-to-master:
+  #   needs: [ update-changelog ]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: "📥 Checkout"
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: master
+  #         fetch-depth: 0
 
-      - name: "FF merge to master"
-        uses: MaximeHeckel/github-action-merge-fast-forward@v1.1.0
-        with:
-          branchtomerge: origin/develop
-          branch: master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: "FF merge to master"
+  #       uses: MaximeHeckel/github-action-merge-fast-forward@v1.1.0
+  #       with:
+  #         branchtomerge: origin/develop
+  #         branch: master
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
