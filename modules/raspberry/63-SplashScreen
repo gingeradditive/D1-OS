@@ -6,72 +6,98 @@ export LC_ALL=C
 # Functions and Basic Configuration    #
 ########################################
 
-# Load common functions and set up cleanup trap
 source /common.sh
 install_cleanup_trap
 
-# Load additional configuration (e.g., BASE_USER)
-source /files/00-config
+source /files/00-config   # deve definire BASE_USER
 
 ########################################
 # Configuration                        #
 ########################################
 
 DEPS="fbi"
-SPLASHSCREEN_BOOT_CONFIG="/boot/firmware/config.txt"
-SPLASHSCREEN_CMDLINE_CONFIG="/boot/cmdline.txt"
-SPLASHSCREEN_SERVICE_FILE="/etc/systemd/system/splashscreen.service"
-SPLASHSCREEN_SERVICE_CONTENT="[Unit]
-Description=Splash screen
-DefaultDependencies=no
-After=local-fs.target
-Before=graphical.target
 
-[Service]
-ExecStartPre=/usr/bin/sleep 2
-ExecStart=/usr/bin/fbi --noverbose -a /home/pi/D1-Control/splash.png
-StandardInput=tty
-StandardOutput=tty
-TTYPath=/dev/tty1
+BOOT_CONFIG="/boot/firmware/config.txt"
+CMDLINE_CONFIG="/boot/cmdline.txt"
 
-[Install]
-WantedBy=sysinit.target"
+SPLASH_DIR="/usr/local/share/splash"
+SPLASH_IMAGE_SRC="/home/${BASE_USER}/D1-Control/splash.png"
+SPLASH_IMAGE_DST="${SPLASH_DIR}/splash.png"
 
+SERVICE_FILE="/etc/systemd/system/splashscreen.service"
 
 ########################################
 # Install dependencies                 #
 ########################################
 
-apt-get install --yes "${DEPS}"
+apt-get update
+apt-get install --yes ${DEPS}
 
 ########################################
-# Save current dir and switch to home  #
+# Install splash image                 #
 ########################################
 
-pushd "/home/${BASE_USER}" &> /dev/null || exit 1
+echo "Installing splash image"
+
+mkdir -p "${SPLASH_DIR}"
+cp "${SPLASH_IMAGE_SRC}" "${SPLASH_IMAGE_DST}"
+chmod 644 "${SPLASH_IMAGE_DST}"
 
 ########################################
-# install splashscreen                 #
+# Boot configuration                   #
 ########################################
 
-echo "Installing Splashscreen"
-echo "disable_splash=1" | sudo tee -a "${SPLASHSCREEN_BOOT_CONFIG}"
-sudo sed -i '1s/$/ logo.nologo consoleblank=1 loglevel=0 quiet/' "${SPLASHSCREEN_CMDLINE_CONFIG}"
+echo "Configuring boot options"
 
-echo "Boot configuration files modified successfully."
-echo "${SPLASHSCREEN_SERVICE_CONTENT}" | sudo tee "${SPLASHSCREEN_SERVICE_FILE}" > /dev/null
-sudo chmod 644 "${SPLASHSCREEN_SERVICE_FILE}"
-sudo systemctl enable splashscreen.service
-echo "Splashscreen service created and enabled"
+# disable firmware splash (idempotente)
+grep -q "^disable_splash=1" "${BOOT_CONFIG}" || \
+  echo "disable_splash=1" >> "${BOOT_CONFIG}"
+
+# cmdline.txt: una sola riga!
+if ! grep -q "logo.nologo" "${CMDLINE_CONFIG}"; then
+  sed -i '1 s/$/ logo.nologo consoleblank=1 loglevel=0 quiet/' "${CMDLINE_CONFIG}"
+fi
 
 ########################################
-# Return to saved directory            #
+# Create systemd service               #
 ########################################
 
-popd &> /dev/null || exit 1
+echo "Creating splashscreen service"
+
+cat << 'EOF' > "${SERVICE_FILE}"
+[Unit]
+Description=Splash screen
+DefaultDependencies=no
+After=local-fs.target dev-fb0.device
+Requires=dev-fb0.device
+Before=graphical.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/sleep 3
+ExecStart=/usr/bin/fbi -T 1 --noverbose -a --once /usr/local/share/splash/splash.png
+StandardInput=tty-force
+StandardOutput=tty
+TTYPath=/dev/tty1
+
+[Install]
+WantedBy=sysinit.target
+EOF
+
+chmod 644 "${SERVICE_FILE}"
 
 ########################################
 # Enable service                       #
 ########################################
 
-systemctl_if_exists enable splashscreen
+systemctl daemon-reload
+systemctl enable splashscreen.service
+
+echo "Splashscreen service installed and enabled"
+
+########################################
+# Optional: test hint                  #
+########################################
+
+echo "You can test manually with:"
+echo "  sudo fbi -T 1 -a ${SPLASH_IMAGE_DST}"
