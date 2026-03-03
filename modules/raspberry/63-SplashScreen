@@ -21,7 +21,7 @@ BOOT_CONFIG="/boot/firmware/config.txt"
 CMDLINE_CONFIG="/boot/cmdline.txt"
 
 SPLASH_DIR="/usr/local/share/splash"
-SPLASH_IMAGE_SRC="/home/${BASE_USER}/D1-Control/splash.png"
+SPLASH_IMAGE_SRC="/home/${BASE_USER}/D1-control/splash.png"
 SPLASH_IMAGE_DST="${SPLASH_DIR}/splash.png"
 
 SERVICE_FILE="/etc/systemd/system/splashscreen.service"

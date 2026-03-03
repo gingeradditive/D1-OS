@@ -17,7 +17,7 @@ source /files/00-config
 # Configuration                        #
 ########################################
 
-REPO="https://github.com/gingeradditive/D1-Control"
+REPO="https://github.com/gingeradditive/D1-control"
 DEPS=(git python3-pip)
 
 ########################################
@@ -37,15 +37,15 @@ pushd "/home/${BASE_USER}" &> /dev/null || exit 1
 # Clone repository                     #
 ########################################
 
-echo "Cloning D1-Control repository..."
-sudo -u "${BASE_USER}" git clone "${REPO}" D1-Control
+echo "Cloning D1-control repository..."
+sudo -u "${BASE_USER}" git clone "${REPO}" D1-control
 
 ########################################
 # Run installation script              #
 ########################################
 
 echo "Running install script..."
-pushd "D1-Control" &> /dev/null || exit 1
+pushd "D1-control" &> /dev/null || exit 1
 
 # TODO: enable after fixing 
 sudo -u "${BASE_USER}" bash scripts/install.sh
