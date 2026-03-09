@@ -2,6 +2,17 @@
 # Changelog
 All notable changes to Ginger DryerOS will be documented in this file.
 
+## [1.0.1](https://github.com/gingeradditive/DryerOS/releases/tag/1.0.1) - 2026-03-09
+### Bug Fixes and Improvements
+
+- Improve splashscreen installation and service configuration
+- Update D1-Control repository name to D1-control
+
+### Other
+
+- Disable merge-develop-to-master
+- Bump version to v1.0.1
+
 ## [1.0.0](https://github.com/gingeradditive/DryerOS/releases/tag/1.0.0) - 2025-11-12
 ### Features
 
