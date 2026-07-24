@@ -2,6 +2,14 @@
 # Changelog
 All notable changes to Ginger DryerOS will be documented in this file.
 
+## [1.0.6](https://github.com/gingeradditive/DryerOS/releases/tag/1.0.6) - 2026-07-24
+### Other
+
+- Bump version to v1.0.5
+- Bump version to v1.0.5-alpha.1
+- Bump version to v1.0.5
+- Bump version to v1.0.6
+
 ## [1.0.4](https://github.com/gingeradditive/DryerOS/releases/tag/1.0.4) - 2026-07-23
 ### Other
 
