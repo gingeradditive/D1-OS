@@ -17,10 +17,6 @@ source /files/00-config
 # Configuration & Install deps         #
 ########################################
 
-SWAP_CONF_FILE="/etc/dphys-swapfile"
-SWAP_SIZE="256"
-SWAP_MAX="1024"
-
 DEPS=(i2c-tools)
 
 apt-get install --yes "${DEPS[@]}"
@@ -62,16 +58,37 @@ fi
 
 systemctl_if_exists disable hciuart.service
 systemctl_if_exists disable bluetooth.service
-if ! grep "bookworm" /etc/os-release; then
-    systemctl_if_exists disable bluealsa.service
+systemctl_if_exists disable bluealsa.service
+
+# La swap è gestita da D1-Control (scripts/install.sh): il vecchio blocco
+# dphys-swapfile qui non girava mai (variabile sbagliata) e su trixie
+# dphys-swapfile è sostituito da rpi-swap.
+
+########################################
+# Create user and set password         #
+########################################
+
+# Trixie non ha più un utente preconfigurato: senza, il primo boot chiede di
+# crearne uno (userconfig.service) e 51-d1-control non può girare come pi.
+# Su bookworm userconf rinomina/aggiorna l'utente esistente (UID 1000).
+if [ -f /usr/lib/userconf-pi/userconf ]; then
+    hash="$(echo "$BASE_PASSWORD" | openssl passwd -6 -stdin)"
+    /usr/lib/userconf-pi/userconf "$BASE_USER" "${hash}"
 fi
 
+systemctl_if_exists disable userconfig.service
+
 ########################################
-# Increase swapfile size               #
+# Enable passwordless sudo (build)     #
 ########################################
 
-if [[ -f "${PICONFIG_SWAP_CONF_FILE}" ]]; then
-    echo_green "Increasing swap file size to ${SWAP_SIZE} Mb. Limit to ${SWAP_MAX} Mb"
-    sed -i 's/^CONF_SWAPSIZE.*/'CONF_SWAPSIZE="${SWAP_SIZE}"'/' "${SWAP_CONF_FILE}"
-    sed -i 's/^#CONF_MAXSWAP.*/'CONF_MAXSWAP="${SWAP_MAX}"'/' "${SWAP_CONF_FILE}"
+# scripts/install.sh di D1-Control usa sudo come pi durante la build.
+# Trixie non distribuisce più /etc/sudoers.d/010_pi-nopasswd: lo crea
+# raspi-config. 98-remove-passwordless-sudo lo revoca a fine build.
+RASPI_CONFIG="$(command -v raspi-config || true)"
+if [ -n "${RASPI_CONFIG}" ] && grep -q "^do_sudo_pass" "${RASPI_CONFIG}"; then
+    SUDO_USER="${BASE_USER}" raspi-config nonint do_sudo_pass 1
+elif [ ! -f "/etc/sudoers.d/010_${BASE_USER}-nopasswd" ]; then
+    echo "${BASE_USER} ALL=(ALL) NOPASSWD: ALL" > "/etc/sudoers.d/010_${BASE_USER}-nopasswd"
+    chmod 440 "/etc/sudoers.d/010_${BASE_USER}-nopasswd"
 fi

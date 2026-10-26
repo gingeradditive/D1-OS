@@ -11,6 +11,12 @@ on:
       - ".github/workflows/build.yml"
       - "config.yml"
   workflow_dispatch:
+    inputs:
+      d1_control_ref:
+        description: 'Branch/tag di D1-control da installare (per immagini di test)'
+        type: string
+        required: false
+        default: 'main'
 
 concurrency:
   group: ci-build-${{ github.ref }}-1
@@ -38,7 +44,7 @@ jobs:
 
   build:
     needs: generate-matrix
-    runs-on: ubuntu-22.04-arm
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
@@ -136,12 +142,14 @@ jobs:
         run: ls -la
 
       - name: "🏗 Run CustoPiZer"
-        uses: OctoPrint/CustoPiZer@main
+        uses: OctoPrint/CustoPiZer@1.5.0
         with:
           workspace: "${{ github.workspace }}/build"
           scripts:  "${{ github.workspace }}/scripts"
           config: "${{ github.workspace }}/config.local"
-          environment: '{ "RELEASE_TAG": "${{ env.RELEASE_TAG }}"}'
+          environment: '{ "RELEASE_TAG": "${{ env.RELEASE_TAG }}", "D1_CONTROL_REF": "${{ inputs.d1_control_ref || ''main'' }}" }'
+          # 1.5.0: supporto trixie (/boot/firmware, qemu senza -static, polkitd)
+          custopizer: "1.5.0"
 
       - name: "✏ Rename image"
         working-directory: ./build

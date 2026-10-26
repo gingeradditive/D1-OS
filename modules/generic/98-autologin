@@ -9,5 +9,5 @@ ExecStart=
 ExecStart=-/sbin/agetty --autologin pi --noclear %I \$TERM
 EOF
 
-systemctl daemon-reload
-systemctl restart getty@tty1
+# niente daemon-reload/restart: siamo nel chroot di build, systemd non gira;
+# il drop-in viene letto al primo boot.
