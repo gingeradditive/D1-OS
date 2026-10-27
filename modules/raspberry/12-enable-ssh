@@ -1,0 +1,44 @@
+#!/bin/bash
+set -xe
+export LC_ALL=C
+
+########################################
+# Functions and Basic Configuration    #
+########################################
+
+# Load common functions and set up cleanup trap
+source /common.sh
+install_cleanup_trap
+
+# Load additional configuration (e.g., BASE_USER)
+source /files/00-config
+
+########################################
+# Enable SSH                           #
+########################################
+
+# Raspberry Pi Imager 2.x non permette di personalizzare le immagini custom
+# (niente "abilita SSH" al flash): SSH è attivo già nell'immagine, con
+# accesso via password per $BASE_USER/$BASE_PASSWORD (vedi 10-config-raspberry).
+
+systemctl enable ssh.service
+
+# Al primo boot il machine-id è "uninitialized" e systemd riapplica i preset
+# a tutte le unità: il preset in /etc (precedenza su /usr/lib) tiene SSH
+# abilitato qualunque sia il default della distribuzione.
+mkdir -p /etc/systemd/system-preset
+cat > /etc/systemd/system-preset/10-d1os-ssh.preset <<PRESET
+enable ssh.service
+PRESET
+
+# Login con password esplicito: non dipende dai default di sshd o di cloud-init.
+mkdir -p /etc/ssh/sshd_config.d
+cat > /etc/ssh/sshd_config.d/10-d1os.conf <<SSHD
+PasswordAuthentication yes
+PermitRootLogin no
+SSHD
+
+mkdir -p /etc/cloud/cloud.cfg.d
+cat > /etc/cloud/cloud.cfg.d/99-d1os-ssh.cfg <<CLOUD
+ssh_pwauth: true
+CLOUD
