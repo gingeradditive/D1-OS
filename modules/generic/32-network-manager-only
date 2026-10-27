@@ -1,0 +1,36 @@
+#!/bin/bash
+set -xe
+export LC_ALL=C
+
+########################################
+# Functions and Basic Configuration    #
+########################################
+
+# Load common functions and set up cleanup trap
+source /common.sh
+install_cleanup_trap
+
+# Load additional configuration (e.g., BASE_USER)
+source /files/00-config
+
+########################################
+# NetworkManager only                  #
+########################################
+
+# La rete la gestisce NetworkManager. Il machine-id dell'immagine è
+# "uninitialized": al primo boot systemd applica i preset e
+# 90-systemd.preset di Debian abilita systemd-networkd e
+# systemd-networkd-wait-online. Senza link gestiti da networkd, wait-online
+# va in timeout dopo 2 minuti tenendo fermo network-online.target, e con
+# lui nginx (cioè la UI). Il preset in /etc ha la precedenza su /usr/lib.
+
+mkdir -p /etc/systemd/system-preset
+cat > /etc/systemd/system-preset/10-d1os.preset <<PRESET
+disable systemd-networkd.service
+disable systemd-networkd.socket
+disable systemd-networkd-wait-online.service
+PRESET
+
+systemctl_if_exists disable systemd-networkd.service
+systemctl_if_exists disable systemd-networkd.socket
+systemctl mask systemd-networkd-wait-online.service
