@@ -2,6 +2,22 @@
 # Changelog
 All notable changes to Ginger DryerOS will be documented in this file.
 
+## [1.0.7](https://github.com/gingeradditive/DryerOS/releases/tag/1.0.7) - 2026-11-13
+### Features
+
+- **trixie**: Build on Raspberry Pi OS trixie (Debian 13)
+- Enable SSH with password login in the image
+
+### Bug Fixes and Improvements
+
+- Disable 32-canbus module
+- Keep systemd-networkd and wait-online off on first boot
+
+### Other
+
+- Bump version to v1.0.6
+- Bump version to v1.0.7
+
 ## [1.0.5](https://github.com/gingeradditive/DryerOS/releases/tag/1.0.5) - 2026-08-07
 ### Other
 
