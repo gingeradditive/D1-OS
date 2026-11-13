@@ -17,8 +17,10 @@ source /files/00-config   # deve definire BASE_USER
 
 DEPS="fbi"
 
-BOOT_CONFIG="/boot/firmware/config.txt"
-CMDLINE_CONFIG="/boot/cmdline.txt"
+# BOOT_PATH viene da CustoPiZer (/boot/firmware da bookworm in poi):
+# /boot/cmdline.txt non è più il file letto dal firmware.
+BOOT_CONFIG="${BOOT_PATH}/config.txt"
+CMDLINE_CONFIG="${BOOT_PATH}/cmdline.txt"
 
 SPLASH_DIR="/usr/local/share/splash"
 SPLASH_IMAGE_SRC="/home/${BASE_USER}/D1-control/splash.png"
